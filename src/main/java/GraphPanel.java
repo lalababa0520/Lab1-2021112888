@@ -41,7 +41,7 @@ final class GraphPanel extends JPanel {
   public GraphPanel() {
     graph = new HashMap<>();
     positions = new HashMap<>();
-    highlightedPath = new ArrayList<>();git
+    highlightedPath = new ArrayList<>();
   }
 
   public void setGraph(Map<String, Map<String, Integer>> graph, String firstWord) {
