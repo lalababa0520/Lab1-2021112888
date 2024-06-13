@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-public class TextGraphTest {
+public class TextGraphwTest {
 
     private TextGraph graph;
 
@@ -13,7 +13,7 @@ public class TextGraphTest {
     public void setUp() {
         graph = new TextGraph();
         try {
-            graph.readTextFile("./test.txt");
+            graph.readTextFile("./test1.txt");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

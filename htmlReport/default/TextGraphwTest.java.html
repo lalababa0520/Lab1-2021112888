@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TextGraphwTest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TextGraphwTest 覆盖结果</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">TextGraphwTest.java</span></div><h1>TextGraphwTest.java</h1><pre class="source lang-java linenums">import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+<span class="fc" id="L8">public class TextGraphwTest {</span>
+
+    private TextGraph graph;
+
+    @BeforeEach
+    public void setUp() {
+<span class="fc" id="L14">        graph = new TextGraph();</span>
+        try {
+<span class="fc" id="L16">            graph.readTextFile(&quot;./test1.txt&quot;);</span>
+<span class="nc" id="L17">        } catch (IOException e) {</span>
+<span class="nc" id="L18">            throw new RuntimeException(e);</span>
+<span class="fc" id="L19">        }</span>
+<span class="fc" id="L20">    }</span>
+
+    @Test
+    public void testQueryBridgeWords_NoWordsInGraph() {
+<span class="fc" id="L24">        String result=graph.queryBridgeWords(&quot;apple&quot;, &quot;banana&quot;);</span>
+<span class="fc" id="L25">        assertEquals(&quot;No \&quot;apple\&quot; and \&quot;banana\&quot; in the graph!&quot;,result);</span>
+<span class="fc" id="L26">    }</span>
+
+    @Test
+    public void testQueryBridgeWords_NoWord1InGraph() {
+<span class="fc" id="L30">        String result=graph.queryBridgeWords(&quot;apple&quot;, &quot;orange&quot;);</span>
+<span class="fc" id="L31">        assertEquals(&quot;No \&quot;apple\&quot; in the graph!&quot;,result);</span>
+<span class="fc" id="L32">    }</span>
+
+    @Test
+    public void testQueryBridgeWords_NoWord2InGraph() {
+<span class="fc" id="L36">        String result=graph.queryBridgeWords(&quot;orange&quot;, &quot;banana&quot;);</span>
+<span class="fc" id="L37">        assertEquals(&quot;No \&quot;banana\&quot; in the graph!&quot;,result);</span>
+<span class="fc" id="L38">    }</span>
+
+    @Test
+    public void testQueryBridgeWords_NoBridgeWords() {
+<span class="fc" id="L42">        String result=graph.queryBridgeWords(&quot;orange&quot;, &quot;lemon&quot;);</span>
+<span class="fc" id="L43">        assertEquals(&quot;No bridge words from \&quot;orange\&quot; to \&quot;lemon\&quot;!&quot;,result);</span>
+<span class="fc" id="L44">    }</span>
+
+    @Test
+    public void testQueryBridgeWords_SingleBridgeWord() {
+<span class="fc" id="L48">        String result=graph.queryBridgeWords(&quot;orange&quot;, &quot;grape&quot;);</span>
+<span class="fc" id="L49">        assertEquals(&quot;The bridge words from \&quot;orange\&quot; to \&quot;grape\&quot; is: mango&quot;,result);</span>
+<span class="fc" id="L50">    }</span>
+
+    @Test
+    public void testQueryBridgeWords_MultipleBridgeWords() {
+<span class="fc" id="L54">        String result=graph.queryBridgeWords(&quot;orange&quot;, &quot;cherry&quot;);</span>
+<span class="fc" id="L55">        assertEquals(&quot;The bridge words from \&quot;orange\&quot; to \&quot;cherry\&quot; are: kiwi, peach&quot;,result);</span>
+<span class="fc" id="L56">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
