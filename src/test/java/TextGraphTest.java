@@ -13,7 +13,7 @@ public class TextGraphTest {
     public void setUp() {
         textGraph = new TextGraph();
         try {
-            textGraph.readTextFile("./lll.txt");
+            textGraph.readTextFile("./test.txt");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
