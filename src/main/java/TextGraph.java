@@ -87,7 +87,8 @@ final class TextGraph {
 
   //查询桥接词
   public String queryBridgeWords(String word1, String word2) {
-    if (!graph.containsKey(word1) && !graph.containsKey(word2)) {
+    if (!graph.containsKey(word1)
+            && !graph.containsKey(word2)) {
       return "No \"" + word1 + "\" and \"" + word2 + "\" in the graph!";
     } else if (!graph.containsKey(word1)) {
       return "No \"" + word1 + "\" in the graph!";
@@ -98,7 +99,7 @@ final class TextGraph {
     Set<String> bridgeWords = new HashSet<>();
     Map<String, Integer> neighbors = graph.get(word1); //单词1的所有邻接词
     for (String neighbor : neighbors.keySet()) {
-      if (graph.get(neighbor).containsKey(word2)) {
+      if (graph.get(neighbor).containsKey(word2)) { //设置中间词的连接词是word2
         bridgeWords.add(neighbor);
       }
     }

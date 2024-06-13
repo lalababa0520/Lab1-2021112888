@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GraphPanel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TextGraphTest 覆盖结果</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">GraphPanel.java</span></div><h1>GraphPanel.java</h1><pre class="source lang-java linenums">import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.RenderingHints;
+import java.awt.geom.QuadCurve2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+
+final class GraphPanel extends JPanel {
+  private Map&lt;String, Map&lt;String, Integer&gt;&gt; graph; // 存储图的结构，节点及其邻接节点和边的权重
+  private Map&lt;String, Point&gt; positions; // 存储每个节点在面板上的位置
+  private String firstWord; // 图中第一个单词
+  private List&lt;String&gt; highlightedPath; // 要高亮显示的路径
+
+  // 色系，用于节点的颜色
+<span class="nc" id="L28">  private final Color[] colors = {</span>
+    new Color(0x74AED4),
+    new Color(0xECA8A9),
+    new Color(0xD3E2B7),
+    new Color(0xCFAFD4),
+    new Color(0xF7C97E),
+    new Color(0xeca680),
+    new Color(0x71DBC8),
+    new Color(0xfb63a9),
+    new Color(0x8ccbea),
+    new Color(0x76925c),
+  };
+
+<span class="nc" id="L41">  public GraphPanel() {</span>
+<span class="nc" id="L42">    graph = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L43">    positions = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L44">    highlightedPath = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L45">  }</span>
+
+  public void setGraph(Map&lt;String, Map&lt;String, Integer&gt;&gt; graph, String firstWord) {
+<span class="nc" id="L48">    this.graph = graph;</span>
+<span class="nc" id="L49">    this.firstWord = firstWord;</span>
+<span class="nc" id="L50">    generatePositions();</span>
+<span class="nc" id="L51">  }</span>
+
+  public void setHighlightedPath(List&lt;String&gt; path) {
+<span class="nc" id="L54">    highlightedPath = path;</span>
+<span class="nc" id="L55">  }</span>
+
+
+  public void clearHighlightedPath() {
+<span class="nc" id="L59">    highlightedPath = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L60">  }</span>
+
+  public void clearGraph() {
+<span class="nc" id="L63">    graph = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L64">    positions = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L65">    highlightedPath = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L66">    firstWord = null;</span>
+<span class="nc" id="L67">    repaint();</span>
+<span class="nc" id="L68">  }</span>
+
+  private void generatePositions() {
+<span class="nc" id="L71">    int width = 1000; // 面板宽度</span>
+<span class="nc" id="L72">    int height = 1400; // 面板高度</span>
+<span class="nc" id="L73">    int margin = 10; // 边距</span>
+<span class="nc" id="L74">    int levelHeight = (height - 2 * margin) / (graph.size() + 1); // 计算每层的高度</span>
+
+<span class="nc" id="L76">    Map&lt;String, Integer&gt; levels = new HashMap&lt;&gt;(); // 存储每个节点的层次</span>
+<span class="nc" id="L77">    Set&lt;String&gt; visited = new HashSet&lt;&gt;(); // 存储已访问的节点</span>
+<span class="nc" id="L78">    int maxLevel = 0; // 记录最大层次</span>
+
+<span class="nc bnc" id="L80" title="All 4 branches missed.">    if (firstWord != null &amp;&amp; graph.containsKey(firstWord)) {</span>
+<span class="nc" id="L81">      maxLevel = assignLevels(firstWord, 0, levels, visited); // 分配层次</span>
+    }
+
+<span class="nc" id="L84">    Map&lt;Integer, List&lt;String&gt;&gt; levelNodes = new HashMap&lt;&gt;(); // 存储每层的节点</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">    for (Map.Entry&lt;String, Integer&gt; entry : levels.entrySet()) {</span>
+<span class="nc" id="L86">      String node = entry.getKey();</span>
+<span class="nc" id="L87">      int level = entry.getValue();</span>
+
+<span class="nc" id="L89">      levelNodes.putIfAbsent(level, new ArrayList&lt;&gt;());</span>
+<span class="nc" id="L90">      levelNodes.get(level).add(node);</span>
+<span class="nc" id="L91">    }</span>
+
+
+    // 根据层次和节点数量计算节点位置
+<span class="nc bnc" id="L95" title="All 2 branches missed.">    for (int level = 0; level &lt;= maxLevel; level++) {</span>
+<span class="nc" id="L96">      List&lt;String&gt; nodes = levelNodes.get(level);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">      if (nodes != null) {</span>
+<span class="nc" id="L98">        int levelWidth = (width - 2 * margin) / (nodes.size() + 1);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">        for (int i = 0; i &lt; nodes.size(); i++) {</span>
+<span class="nc" id="L100">          String node = nodes.get(i);</span>
+<span class="nc" id="L101">          int x = margin + (i + 1) * levelWidth;</span>
+<span class="nc" id="L102">          int y = margin + level * levelHeight;</span>
+<span class="nc" id="L103">          positions.put(node, new Point(x, y));</span>
+        }
+      }
+    }
+<span class="nc" id="L107">  }</span>
+
+  private int assignLevels(
+          String node, int level, Map&lt;String, Integer&gt; levels, Set&lt;String&gt; visited) {
+<span class="nc" id="L111">    visited.add(node);</span>
+<span class="nc" id="L112">    levels.put(node, level);</span>
+<span class="nc" id="L113">    int maxLevel = level;</span>
+
+<span class="nc bnc" id="L115" title="All 2 branches missed.">    if (graph.containsKey(node)) {</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">      for (String neighbor : graph.get(node).keySet()) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">        if (!visited.contains(neighbor)) {</span>
+<span class="nc" id="L118">          maxLevel = Math.max(maxLevel, assignLevels(neighbor, level + 1, levels, visited));</span>
+        }
+<span class="nc" id="L120">      }</span>
+    }
+<span class="nc" id="L122">    return maxLevel;</span>
+  }
+
+  protected void paintComponent(Graphics g) {
+<span class="nc" id="L126">    super.paintComponent(g);</span>
+<span class="nc" id="L127">    Graphics2D g2d = (Graphics2D) g;</span>
+<span class="nc" id="L128">    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);</span>
+
+<span class="nc" id="L130">    int sum = 0;</span>
+    // 绘制边
+<span class="nc bnc" id="L132" title="All 2 branches missed.">    for (Map.Entry&lt;String, Map&lt;String, Integer&gt;&gt; entry : graph.entrySet()) {</span>
+<span class="nc" id="L133">      String from = entry.getKey();</span>
+<span class="nc" id="L134">      Point p1 = positions.get(from);</span>
+<span class="nc" id="L135">      sum++;</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">      for (Map.Entry&lt;String, Integer&gt; edge : entry.getValue().entrySet()) {</span>
+<span class="nc" id="L137">        String to = edge.getKey();</span>
+        int weight;
+<span class="nc" id="L139">        weight = edge.getValue();</span>
+<span class="nc" id="L140">        Point p2 = positions.get(to);</span>
+
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (p2 == null) {</span>
+<span class="nc" id="L143">          continue;</span>
+        }
+
+<span class="nc" id="L146">        boolean isHighlighted = false;</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        for (int i = 0; i &lt; highlightedPath.size() - 1; i++) {</span>
+<span class="nc bnc" id="L148" title="All 4 branches missed.">          if (highlightedPath.get(i).equals(from) &amp;&amp; highlightedPath.get(i + 1).equals(to)) {</span>
+<span class="nc" id="L149">            isHighlighted = true;</span>
+<span class="nc" id="L150">            break;</span>
+          }
+        }
+
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (isHighlighted) {</span>
+<span class="nc" id="L155">          g2d.setColor(Color.RED); // 突出显示的路径使用红色</span>
+<span class="nc" id="L156">          g2d.setStroke(new BasicStroke(4)); // 较粗的线条</span>
+        } else {
+<span class="nc" id="L158">          g2d.setColor(colors[sum % colors.length]); // 其他路径使用灰色</span>
+<span class="nc" id="L159">          g2d.setStroke(new BasicStroke(2)); // 较细的线条</span>
+        }
+<span class="nc" id="L161">        drawCurvedArrowLine(g2d, p1.x, p1.y, p2.x, p2.y, isHighlighted); // 画箭头线</span>
+<span class="nc" id="L162">        g2d.setColor(colors[sum % colors.length]);</span>
+<span class="nc" id="L163">        g2d.drawString(String.valueOf(weight), (p1.x + p2.x) / 2, (p1.y + p2.y) / 2);</span>
+<span class="nc" id="L164">      }</span>
+<span class="nc" id="L165">    }</span>
+
+    // 绘制节点
+<span class="nc" id="L168">    sum = 0;</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">    for (Map.Entry&lt;String, Point&gt; entry : positions.entrySet()) {</span>
+<span class="nc" id="L170">      String node = entry.getKey();</span>
+<span class="nc" id="L171">      Point p = entry.getValue();</span>
+<span class="nc" id="L172">      int adjSize = graph.getOrDefault(node, new HashMap&lt;&gt;()).size();</span>
+<span class="nc" id="L173">      sum++;</span>
+<span class="nc" id="L174">      Color nodeColor = colors[sum % colors.length];</span>
+<span class="nc" id="L175">      g2d.setColor(nodeColor);</span>
+
+      // 计算椭圆大小
+<span class="nc" id="L178">      FontMetrics fm = g2d.getFontMetrics();</span>
+<span class="nc" id="L179">      int stringWidth = fm.stringWidth(node);</span>
+<span class="nc" id="L180">      int stringHeight = fm.getAscent();</span>
+<span class="nc" id="L181">      int ellipseWidth = stringWidth + 10;</span>
+<span class="nc" id="L182">      int ellipseHeight = stringHeight + 5;</span>
+
+      // 绘制椭圆
+<span class="nc" id="L185">      g2d.fillOval(p.x - ellipseWidth / 2, p.y - ellipseHeight / 2, ellipseWidth, ellipseHeight);</span>
+<span class="nc" id="L186">      g2d.setColor(nodeColor);</span>
+<span class="nc" id="L187">      g2d.drawOval(p.x - ellipseWidth / 2, p.y - ellipseHeight / 2, ellipseWidth, ellipseHeight);</span>
+
+      // 绘制节点文本
+<span class="nc" id="L190">      g2d.setColor(Color.BLACK);</span>
+<span class="nc" id="L191">      g2d.drawString(node, p.x - stringWidth / 2, p.y + stringHeight / 4);</span>
+<span class="nc" id="L192">    }</span>
+<span class="nc" id="L193">  }</span>
+
+  private void drawCurvedArrowLine(
+          Graphics2D g2d, int x1, int y1, int x2, int y2, boolean isHighlighted) {
+<span class="nc" id="L197">    int d = 8; // 箭头的长度</span>
+<span class="nc" id="L198">    int h = 6;  // 箭头的宽度</span>
+<span class="nc" id="L199">    int dx = x2 - x1;</span>
+<span class="nc" id="L200">    int dy = y2 - y1;</span>
+
+<span class="nc" id="L202">    double sin = dy / (Math.sqrt(dx * dx + dy * dy));</span>
+<span class="nc" id="L203">    double cos = dx / (Math.sqrt(dx * dx + dy * dy));</span>
+
+    // 计算缩短后的线条终点
+<span class="nc" id="L206">    int shorteningDistance = 5; // 调整此值以进一步缩短终点</span>
+<span class="nc" id="L207">    int newX2 = x1 + (int) (((Math.sqrt(dx * dx + dy * dy)) - shorteningDistance) * cos);</span>
+<span class="nc" id="L208">    int newY2 = y1 + (int) (((Math.sqrt(dx * dx + dy * dy)) - shorteningDistance) * sin);</span>
+
+    // 计算曲线的控制点
+<span class="nc" id="L211">    int ctrlX = (x1 + x2) / 2 + dy / 4;</span>
+<span class="nc" id="L212">    int ctrlY = (y1 + y2) / 2 - dx / 4;</span>
+
+    // 计算终点的切线方向
+<span class="nc" id="L215">    double t = 1; // 在曲线上的位置，取值范围在0到1之间</span>
+<span class="nc" id="L216">    double ctrlDx = 2 * (1 - t) * (ctrlX - x1) + 2 * t * (x2 - ctrlX);</span>
+<span class="nc" id="L217">    double ctrlDy = 2 * (1 - t) * (ctrlY - y1) + 2 * t * (y2 - ctrlY);</span>
+<span class="nc" id="L218">    double ctrlD = Math.sqrt(ctrlDx * ctrlDx + ctrlDy * ctrlDy);</span>
+<span class="nc" id="L219">    double ctrlSin = ctrlDy / ctrlD;</span>
+<span class="nc" id="L220">    double ctrlCos = ctrlDx / ctrlD;</span>
+
+    // 基于新的终点和切线方向计算箭头的点
+<span class="nc" id="L223">    double xm = newX2 - d * ctrlCos + h * ctrlSin;</span>
+<span class="nc" id="L224">    double ym = newY2 - d * ctrlSin - h * ctrlCos;</span>
+<span class="nc" id="L225">    double xn = newX2 - d * ctrlCos - h * ctrlSin;</span>
+<span class="nc" id="L226">    double yn = newY2 - d * ctrlSin + h * ctrlCos;</span>
+
+<span class="nc" id="L228">    int[] xpoints = {newX2, (int) xm, (int) xn};</span>
+<span class="nc" id="L229">    int[] ypoints = {newY2, (int) ym, (int) yn};</span>
+
+    // 画缩短的曲线
+<span class="nc" id="L232">    QuadCurve2D.Double curve = new QuadCurve2D.Double(x1, y1, ctrlX, ctrlY, newX2, newY2);</span>
+<span class="nc" id="L233">    g2d.draw(curve);</span>
+
+    // 画实心箭头
+<span class="nc" id="L236">    g2d.fillPolygon(xpoints, ypoints, 3);</span>
+<span class="nc" id="L237">  }</span>
+
+  public void saveGraphAsImage(File file) throws IOException {
+<span class="nc" id="L240">    int width = this.getWidth();</span>
+<span class="nc" id="L241">    int height = this.getHeight();</span>
+<span class="nc" id="L242">    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);</span>
+<span class="nc" id="L243">    Graphics2D g2d = image.createGraphics();</span>
+<span class="nc" id="L244">    this.paint(g2d);</span>
+<span class="nc" id="L245">    g2d.dispose();</span>
+<span class="nc" id="L246">    ImageIO.write(image, &quot;PNG&quot;, file);</span>
+<span class="nc" id="L247">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

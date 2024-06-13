@@ -7,45 +7,51 @@ import java.io.IOException;
 
 public class TextGraphTest {
 
-    private TextGraph textGraph;
+    private TextGraph graph;
 
     @BeforeEach
     public void setUp() {
-        textGraph = new TextGraph();
+        graph = new TextGraph();
         try {
-            textGraph.readTextFile("./test.txt");
+            graph.readTextFile("./test.txt");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Test
-    public void testPathExists() {
-        String result = textGraph.calcShortestPath("apple", "banana");
-        assertEquals("Shortest path from \"apple\" to \"banana\": apple -> cherry -> banana (Total weight: 2)", result);
+    public void testQueryBridgeWords_NoWordsInGraph() {
+        String result=graph.queryBridgeWords("apple", "banana");
+        assertEquals("No \"apple\" and \"banana\" in the graph!",result);
     }
 
     @Test
-    public void testNoPath() {
-        String result = textGraph.calcShortestPath("apple", "egg");
-        assertEquals("No path from \"apple\" to \"egg\"!", result);
+    public void testQueryBridgeWords_NoWord1InGraph() {
+        String result=graph.queryBridgeWords("apple", "orange");
+        assertEquals("No \"apple\" in the graph!",result);
     }
 
     @Test
-    public void testWord1NotInGraph() {
-        String result = textGraph.calcShortestPath("apple", "dog");
-        assertEquals("No \"dog\" in the graph!", result);
+    public void testQueryBridgeWords_NoWord2InGraph() {
+        String result=graph.queryBridgeWords("orange", "banana");
+        assertEquals("No \"banana\" in the graph!",result);
     }
 
     @Test
-    public void testWord2NotInGraph() {
-        String result = textGraph.calcShortestPath("dog", "banana");
-        assertEquals("No \"dog\" in the graph!", result);
+    public void testQueryBridgeWords_NoBridgeWords() {
+        String result=graph.queryBridgeWords("orange", "lemon");
+        assertEquals("No bridge words from \"orange\" to \"lemon\"!",result);
     }
 
     @Test
-    public void testBothWordsNotInGraph() {
-        String result = textGraph.calcShortestPath("dog", "cat");
-        assertEquals("No \"dog\" and \"cat\" in the graph!", result);
+    public void testQueryBridgeWords_SingleBridgeWord() {
+        String result=graph.queryBridgeWords("orange", "grape");
+        assertEquals("The bridge words from \"orange\" to \"grape\" is: mango",result);
+    }
+
+    @Test
+    public void testQueryBridgeWords_MultipleBridgeWords() {
+        String result=graph.queryBridgeWords("orange", "cherry");
+        assertEquals("The bridge words from \"orange\" to \"cherry\" are: kiwi, peach",result);
     }
 }

@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TextGraphGui.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">TextGraphTest 覆盖结果</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">TextGraphGui.java</span></div><h1>TextGraphGui.java</h1><pre class="source lang-java linenums">import java.awt.BorderLayout;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+
+final class TextGraphGui extends JFrame {
+  private final TextGraph textGraph;
+  private final JTextField filePathField;
+  private final GraphPanel graphPanel;
+  private final JTextField word1Field;
+  private final JTextField word2Field;
+  private final JTextArea resultArea;
+  private final JTextField inputTextField;
+  private final JTextArea outputArea;
+  private final JTextField spWord1Field;
+  private final JTextField spWord2Field;
+  private final JTextArea spResultArea;
+  private final JTextArea randomWalkArea;
+  private final JTextField spFromField;
+  private final JTextArea spFromResultArea;
+  private volatile boolean stopRandomWalk;
+
+<span class="nc" id="L35">  public TextGraphGui() {</span>
+<span class="nc" id="L36">    textGraph = new TextGraph();</span>
+
+<span class="nc" id="L38">    setTitle(&quot;Text Graph GUI&quot;);</span>
+<span class="nc" id="L39">    setSize(1000, 1000);</span>
+<span class="nc" id="L40">    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);</span>
+<span class="nc" id="L41">    setLayout(new BorderLayout());</span>
+
+<span class="nc" id="L43">    JPanel inputPanel = new JPanel();</span>
+<span class="nc" id="L44">    filePathField = new JTextField(40);</span>
+<span class="nc" id="L45">    JButton loadButton = new JButton(&quot;Load File&quot;);</span>
+<span class="nc" id="L46">    JButton saveButton = new JButton(&quot;Save Image&quot;);</span>
+<span class="nc" id="L47">    inputPanel.add(new JLabel(&quot;File Path:&quot;));</span>
+<span class="nc" id="L48">    inputPanel.add(filePathField);</span>
+<span class="nc" id="L49">    inputPanel.add(loadButton);</span>
+<span class="nc" id="L50">    inputPanel.add(saveButton);</span>
+<span class="nc" id="L51">    add(inputPanel, BorderLayout.NORTH);</span>
+
+<span class="nc" id="L53">    graphPanel = new GraphPanel();</span>
+<span class="nc" id="L54">    add(graphPanel, BorderLayout.CENTER);</span>
+
+<span class="nc" id="L56">    loadButton.addActionListener(e -&gt; loadFile());</span>
+<span class="nc" id="L57">    saveButton.addActionListener(e -&gt; saveGraphImage());</span>
+
+    JTabbedPane tabbedPane;
+<span class="nc" id="L60">    tabbedPane = new JTabbedPane();</span>
+
+    JPanel queryPanel;
+<span class="nc" id="L63">    queryPanel = new JPanel();</span>
+<span class="nc" id="L64">    word1Field = new JTextField(10);</span>
+<span class="nc" id="L65">    word2Field = new JTextField(10);</span>
+    JButton queryButton;
+<span class="nc" id="L67">    queryButton = new JButton(&quot;Query Bridge Words&quot;);</span>
+<span class="nc" id="L68">    resultArea = new JTextArea(6, 40);</span>
+<span class="nc" id="L69">    resultArea.setLineWrap(true);</span>
+<span class="nc" id="L70">    resultArea.setWrapStyleWord(true);</span>
+<span class="nc" id="L71">    resultArea.setEditable(false);</span>
+<span class="nc" id="L72">    queryPanel.setLayout(new BorderLayout());</span>
+<span class="nc" id="L73">    JPanel queryInputPanel = new JPanel();</span>
+<span class="nc" id="L74">    queryInputPanel.add(new JLabel(&quot;Word1:&quot;));</span>
+<span class="nc" id="L75">    queryInputPanel.add(word1Field);</span>
+<span class="nc" id="L76">    queryInputPanel.add(new JLabel(&quot;Word2:&quot;));</span>
+<span class="nc" id="L77">    queryInputPanel.add(word2Field);</span>
+<span class="nc" id="L78">    queryInputPanel.add(queryButton);</span>
+<span class="nc" id="L79">    queryPanel.add(queryInputPanel, BorderLayout.NORTH);</span>
+<span class="nc" id="L80">    queryPanel.add(new JScrollPane(resultArea), BorderLayout.CENTER);</span>
+<span class="nc" id="L81">    tabbedPane.addTab(&quot;Query Bridge Words&quot;, queryPanel);</span>
+
+<span class="nc" id="L83">    queryButton.addActionListener(e -&gt; queryBridgeWords());</span>
+
+    JPanel generatePanel;
+<span class="nc" id="L86">    generatePanel = new JPanel();</span>
+<span class="nc" id="L87">    inputTextField = new JTextField(30);</span>
+    JButton generateButton;
+<span class="nc" id="L89">    generateButton = new JButton(&quot;Generate New Text&quot;);</span>
+<span class="nc" id="L90">    outputArea = new JTextArea(6, 40);</span>
+<span class="nc" id="L91">    outputArea.setLineWrap(true);</span>
+<span class="nc" id="L92">    outputArea.setWrapStyleWord(true);</span>
+<span class="nc" id="L93">    outputArea.setEditable(false);</span>
+<span class="nc" id="L94">    generatePanel.setLayout(new BorderLayout());</span>
+<span class="nc" id="L95">    JPanel generateInputPanel = new JPanel();</span>
+<span class="nc" id="L96">    generateInputPanel.add(new JLabel(&quot;Input Text:&quot;));</span>
+<span class="nc" id="L97">    generateInputPanel.add(inputTextField);</span>
+<span class="nc" id="L98">    generateInputPanel.add(generateButton);</span>
+<span class="nc" id="L99">    generatePanel.add(generateInputPanel, BorderLayout.NORTH);</span>
+<span class="nc" id="L100">    generatePanel.add(new JScrollPane(outputArea), BorderLayout.CENTER);</span>
+<span class="nc" id="L101">    tabbedPane.addTab(&quot;Generate New Text&quot;, generatePanel);</span>
+
+<span class="nc" id="L103">    generateButton.addActionListener(e -&gt; generateNewText());</span>
+
+    JPanel shortestPathPanel;
+<span class="nc" id="L106">    shortestPathPanel = new JPanel();</span>
+<span class="nc" id="L107">    spWord1Field = new JTextField(10);</span>
+<span class="nc" id="L108">    spWord2Field = new JTextField(10);</span>
+    JButton shortestPathButton;
+<span class="nc" id="L110">    shortestPathButton = new JButton(&quot;Calculate Shortest Path&quot;);</span>
+<span class="nc" id="L111">    spResultArea = new JTextArea(6, 40);</span>
+<span class="nc" id="L112">    spResultArea.setLineWrap(true);</span>
+<span class="nc" id="L113">    spResultArea.setWrapStyleWord(true);</span>
+<span class="nc" id="L114">    spResultArea.setEditable(false);</span>
+<span class="nc" id="L115">    shortestPathPanel.setLayout(new BorderLayout());</span>
+<span class="nc" id="L116">    JPanel shortestPathInputPanel = new JPanel();</span>
+<span class="nc" id="L117">    shortestPathInputPanel.add(new JLabel(&quot;Word1:&quot;));</span>
+<span class="nc" id="L118">    shortestPathInputPanel.add(spWord1Field);</span>
+<span class="nc" id="L119">    shortestPathInputPanel.add(new JLabel(&quot;Word2:&quot;));</span>
+<span class="nc" id="L120">    shortestPathInputPanel.add(spWord2Field);</span>
+<span class="nc" id="L121">    shortestPathInputPanel.add(shortestPathButton);</span>
+<span class="nc" id="L122">    shortestPathPanel.add(shortestPathInputPanel, BorderLayout.NORTH);</span>
+<span class="nc" id="L123">    shortestPathPanel.add(new JScrollPane(spResultArea), BorderLayout.CENTER);</span>
+<span class="nc" id="L124">    tabbedPane.addTab(&quot;Shortest Path&quot;, shortestPathPanel);</span>
+
+<span class="nc" id="L126">    shortestPathButton.addActionListener(e -&gt; calculateShortestPath());</span>
+
+    JPanel randomWalkPanel;
+<span class="nc" id="L129">    randomWalkPanel = new JPanel();</span>
+    JButton randomWalkButton;
+<span class="nc" id="L131">    randomWalkButton = new JButton(&quot;Random Walk&quot;);</span>
+    JButton stopRandomWalkButton;
+<span class="nc" id="L133">    stopRandomWalkButton = new JButton(&quot;Stop Random Walk&quot;);</span>
+<span class="nc" id="L134">    randomWalkArea = new JTextArea(6, 40);</span>
+<span class="nc" id="L135">    randomWalkArea.setLineWrap(true);</span>
+<span class="nc" id="L136">    randomWalkArea.setWrapStyleWord(true);</span>
+<span class="nc" id="L137">    randomWalkArea.setEditable(false);</span>
+<span class="nc" id="L138">    randomWalkPanel.setLayout(new BorderLayout());</span>
+<span class="nc" id="L139">    JPanel randomWalkInputPanel = new JPanel();</span>
+<span class="nc" id="L140">    randomWalkInputPanel.add(randomWalkButton);</span>
+<span class="nc" id="L141">    randomWalkInputPanel.add(stopRandomWalkButton);</span>
+<span class="nc" id="L142">    randomWalkPanel.add(randomWalkInputPanel, BorderLayout.NORTH);</span>
+<span class="nc" id="L143">    randomWalkPanel.add(new JScrollPane(randomWalkArea), BorderLayout.CENTER);</span>
+<span class="nc" id="L144">    tabbedPane.addTab(&quot;Random Walk&quot;, randomWalkPanel);</span>
+
+<span class="nc" id="L146">    randomWalkButton.addActionListener(e -&gt; performRandomWalk());</span>
+<span class="nc" id="L147">    stopRandomWalkButton.addActionListener(e -&gt; stopRandomWalk = true);</span>
+
+    JPanel shortestPathsFromPanel;
+<span class="nc" id="L150">    shortestPathsFromPanel = new JPanel();</span>
+<span class="nc" id="L151">    spFromField = new JTextField(10);</span>
+    JButton shortestPathsFromButton;
+<span class="nc" id="L153">    shortestPathsFromButton = new JButton(&quot;Calculate All Shortest Paths&quot;);</span>
+<span class="nc" id="L154">    spFromResultArea = new JTextArea(6, 40);</span>
+<span class="nc" id="L155">    spFromResultArea.setLineWrap(true);</span>
+<span class="nc" id="L156">    spFromResultArea.setWrapStyleWord(true);</span>
+<span class="nc" id="L157">    spFromResultArea.setEditable(false);</span>
+<span class="nc" id="L158">    shortestPathsFromPanel.setLayout(new BorderLayout());</span>
+<span class="nc" id="L159">    JPanel shortestPathsFromInputPanel = new JPanel();</span>
+<span class="nc" id="L160">    shortestPathsFromInputPanel.add(new JLabel(&quot;From:&quot;));</span>
+<span class="nc" id="L161">    shortestPathsFromInputPanel.add(spFromField);</span>
+<span class="nc" id="L162">    shortestPathsFromInputPanel.add(shortestPathsFromButton);</span>
+<span class="nc" id="L163">    shortestPathsFromPanel.add(shortestPathsFromInputPanel, BorderLayout.NORTH);</span>
+<span class="nc" id="L164">    shortestPathsFromPanel.add(new JScrollPane(spFromResultArea), BorderLayout.CENTER);</span>
+<span class="nc" id="L165">    tabbedPane.addTab(&quot;All Shortest Paths&quot;, shortestPathsFromPanel);</span>
+
+<span class="nc" id="L167">    shortestPathsFromButton.addActionListener(e -&gt; calculateAllShortestPaths());</span>
+
+<span class="nc" id="L169">    add(tabbedPane, BorderLayout.SOUTH);</span>
+<span class="nc" id="L170">  }</span>
+
+  private void loadFile() {
+<span class="nc" id="L173">    String filePath = filePathField.getText();</span>
+    try {
+<span class="nc" id="L175">      graphPanel.clearGraph(); // 清除旧的图形数据</span>
+<span class="nc" id="L176">      textGraph.readTextFile(filePath);</span>
+<span class="nc" id="L177">      textGraph.printGraph();</span>
+<span class="nc" id="L178">      graphPanel.setGraph(textGraph.getGraph(), textGraph.getFirstWord());</span>
+<span class="nc" id="L179">      graphPanel.repaint();</span>
+<span class="nc" id="L180">      JOptionPane.showMessageDialog(this, &quot;File loaded successfully!&quot;);</span>
+<span class="nc" id="L181">    } catch (IOException e) {</span>
+<span class="nc" id="L182">      JOptionPane.showMessageDialog(this, &quot;Error reading file: &quot; + e.getMessage());</span>
+<span class="nc" id="L183">    }</span>
+<span class="nc" id="L184">  }</span>
+
+  private void saveGraphImage() {
+<span class="nc" id="L187">    String currentDirectory = System.getProperty(&quot;user.dir&quot;);</span>
+<span class="nc" id="L188">    File fileToSave = new File(currentDirectory, &quot;graph.png&quot;);</span>
+    try {
+<span class="nc" id="L190">      graphPanel.saveGraphAsImage(fileToSave);</span>
+<span class="nc" id="L191">      JOptionPane.showMessageDialog(</span>
+<span class="nc" id="L192">              this, &quot;Graph image saved successfully to &quot; + fileToSave.getAbsolutePath());</span>
+<span class="nc" id="L193">    } catch (IOException ex) {</span>
+<span class="nc" id="L194">      JOptionPane.showMessageDialog(</span>
+<span class="nc" id="L195">              this, &quot;Error saving graph image: &quot; + ex.getMessage());</span>
+<span class="nc" id="L196">    }</span>
+<span class="nc" id="L197">  }</span>
+
+  private void queryBridgeWords() {
+<span class="nc" id="L200">    String word1 = word1Field.getText().trim().toLowerCase();</span>
+<span class="nc" id="L201">    String word2 = word2Field.getText().trim().toLowerCase();</span>
+<span class="nc" id="L202">    String result = textGraph.queryBridgeWords(word1, word2);</span>
+<span class="nc" id="L203">    resultArea.setText(result);</span>
+<span class="nc" id="L204">  }</span>
+
+  private void generateNewText() {
+<span class="nc" id="L207">    String inputText = inputTextField.getText().trim();</span>
+<span class="nc" id="L208">    String newText = textGraph.generateNewText(inputText);</span>
+<span class="nc" id="L209">    outputArea.setText(newText);</span>
+<span class="nc" id="L210">  }</span>
+
+  private void calculateShortestPath() {
+<span class="nc" id="L213">    String word1 = spWord1Field.getText().trim().toLowerCase();</span>
+<span class="nc" id="L214">    String word2 = spWord2Field.getText().trim().toLowerCase();</span>
+
+<span class="nc bnc" id="L216" title="All 2 branches missed.">    if (word2.isEmpty()) {</span>
+<span class="nc" id="L217">      Map&lt;String, List&lt;String&gt;&gt; allPaths = textGraph.calcShortestPathsFrom(word1);</span>
+<span class="nc bnc" id="L218" title="All 2 branches missed.">      if (allPaths.isEmpty()) {</span>
+<span class="nc" id="L219">        spResultArea.setText(&quot;No paths from \&quot;&quot; + word1 + &quot;\&quot; in the graph!&quot;);</span>
+      } else {
+<span class="nc" id="L221">        StringBuilder result = new StringBuilder(&quot;Shortest paths from \&quot;&quot; + word1 + &quot;\&quot;:\n&quot;);</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        for (Map.Entry&lt;String, List&lt;String&gt;&gt; entry : allPaths.entrySet()) {</span>
+<span class="nc" id="L223">          result.append(String.join(&quot; -&gt; &quot;, entry.getValue()));</span>
+<span class="nc" id="L224">          result.append(&quot; (Total weight: &quot;).append(entry.getValue().size() - 1).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L225">        }</span>
+<span class="nc" id="L226">        spResultArea.setText(result.toString());</span>
+      }
+<span class="nc" id="L228">    } else {</span>
+<span class="nc" id="L229">      String result = textGraph.calcShortestPath(word1, word2);</span>
+<span class="nc" id="L230">      spResultArea.setText(result);</span>
+<span class="nc" id="L231">      List&lt;String&gt; path = textGraph.getShortestPath(word1, word2);</span>
+<span class="nc" id="L232">      graphPanel.setHighlightedPath(path);</span>
+<span class="nc" id="L233">      graphPanel.repaint();</span>
+    }
+<span class="nc" id="L235">  }</span>
+
+  private void calculateAllShortestPaths() {
+<span class="nc" id="L238">    String word = spFromField.getText().trim().toLowerCase();</span>
+<span class="nc" id="L239">    Map&lt;String, List&lt;String&gt;&gt; allPaths = textGraph.calcShortestPathsFrom(word);</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">    if (allPaths.isEmpty()) {</span>
+<span class="nc" id="L241">      spFromResultArea.setText(&quot;No paths from \&quot;&quot; + word + &quot;\&quot; in the graph!&quot;);</span>
+    } else {
+<span class="nc" id="L243">      StringBuilder result = new StringBuilder(&quot;Shortest paths from \&quot;&quot; + word + &quot;\&quot;:\n&quot;);</span>
+<span class="nc bnc" id="L244" title="All 2 branches missed.">      for (Map.Entry&lt;String, List&lt;String&gt;&gt; entry : allPaths.entrySet()) {</span>
+<span class="nc" id="L245">        result.append(String.join(&quot; -&gt; &quot;, entry.getValue()));</span>
+<span class="nc" id="L246">        result.append(&quot; (Total weight: &quot;).append(entry.getValue().size() - 1).append(&quot;)\n&quot;);</span>
+<span class="nc" id="L247">      }</span>
+<span class="nc" id="L248">      spFromResultArea.setText(result.toString());</span>
+    }
+<span class="nc" id="L250">  }</span>
+
+  private void performRandomWalk() {
+<span class="nc" id="L253">    stopRandomWalk = false;</span>
+<span class="nc" id="L254">    randomWalkArea.setText(&quot;&quot;);</span>
+<span class="nc" id="L255">    new Thread(() -&gt; {</span>
+<span class="nc" id="L256">      String result = textGraph.randomWalk(</span>
+<span class="nc" id="L257">          () -&gt; stopRandomWalk,</span>
+<span class="nc" id="L258">          step -&gt; SwingUtilities.invokeLater(() -&gt; randomWalkArea.append(step + &quot;\n&quot;))</span>
+        );
+<span class="nc" id="L260">      SwingUtilities.invokeLater(() -&gt; JOptionPane.showMessageDialog(</span>
+              this, &quot;Random walk result saved to random_walk.txt\n&quot; + result));
+<span class="nc" id="L262">    }).start();</span>
+<span class="nc" id="L263">  }</span>
+
+  public static void main(String[] args) {
+<span class="nc" id="L266">    SwingUtilities.invokeLater(() -&gt; {</span>
+<span class="nc" id="L267">      TextGraphGui frame = new TextGraphGui();</span>
+<span class="nc" id="L268">      frame.setVisible(true);</span>
+<span class="nc" id="L269">    });</span>
+<span class="nc" id="L270">  }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
